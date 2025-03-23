@@ -134,10 +134,10 @@ async def help(interaction: discord.Interaction):
 @bot.tree.command(name="itemlist", description="Shows all item priority lists")
 async def itemlist(interaction: discord.Interaction):
     """Shows all item priority lists"""
-    await interaction.response.defer()
-    
-    session = Session()
     try:
+        await interaction.response.defer()
+        
+        session = Session()
         products = session.query(Urun).all()
         if not products:
             await interaction.followup.send("📦 No items added yet!")
@@ -193,7 +193,10 @@ async def itemlist(interaction: discord.Interaction):
                 mesaj = "```ansi\n" + mesaj[son_index+1:]
 
     except Exception as e:
-        await interaction.followup.send(f"❌ An error occurred: {str(e)}")
+        if not interaction.response.is_done():
+            await interaction.response.send_message(f"❌ An error occurred: {str(e)}", ephemeral=True)
+        else:
+            await interaction.followup.send(f"❌ An error occurred: {str(e)}", ephemeral=True)
     finally:
         session.close()
 
@@ -597,17 +600,21 @@ async def kickplayer(interaction: discord.Interaction, member: discord.Member):
 # Error handling
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    error_message = f"❌ An error occurred: {str(error)}"
+    
     try:
         if isinstance(error, app_commands.CheckFailure):
-            await interaction.response.send_message("❌ You don't have permission to use this command!", ephemeral=True)
+            error_message = "❌ You don't have permission to use this command!"
+        
+        if not interaction.response.is_done():
+            await interaction.response.send_message(error_message, ephemeral=True)
         else:
-            if not interaction.response.is_done():
-                await interaction.response.send_message(f"❌ An error occurred: {str(error)}", ephemeral=True)
-            else:
-                await interaction.followup.send(f"❌ An error occurred: {str(error)}", ephemeral=True)
-            logger.error(f"Error: {str(error)}")
-    except discord.errors.NotFound:
-        pass  # Ignore if interaction has already timed out
+            try:
+                await interaction.followup.send(error_message, ephemeral=True)
+            except discord.errors.HTTPException:
+                pass  # Ignore if we can't send a followup
+    except (discord.errors.NotFound, discord.errors.HTTPException):
+        pass  # Ignore if interaction has already timed out or can't be responded to
 
 def run_bot():
     bot.run(TOKEN)
