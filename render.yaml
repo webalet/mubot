@@ -6,4 +6,7 @@ services:
     startCommand: python discordbot.py
     envVars:
       - key: PYTHON_VERSION
-        value: 3.10.0 
+        value: 3.10.0
+      - key: PORT
+        value: 10000
+    plan: free 

@@ -10,6 +10,15 @@ from datetime import datetime
 import asyncio
 from dotenv import load_dotenv
 from discord import app_commands
+from flask import Flask
+import threading
+
+# Flask app initialization
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return 'Bot is running!'
 
 # Load .env file
 load_dotenv()
@@ -601,6 +610,17 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
     except discord.errors.NotFound:
         pass  # Ignore if interaction has already timed out
 
-# Botu çalıştır
-if __name__ == "__main__":
-    bot.run(TOKEN) 
+def run_bot():
+    bot.run(TOKEN)
+
+if __name__ == '__main__':
+    # Create database tables
+    Base.metadata.create_all(engine)
+    
+    # Start the bot in a separate thread
+    bot_thread = threading.Thread(target=run_bot)
+    bot_thread.start()
+    
+    # Start Flask app
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port) 
