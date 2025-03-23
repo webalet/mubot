@@ -32,6 +32,9 @@ logger = logging.getLogger(__name__)
 
 # Discord Bot Token
 TOKEN = os.getenv('DISCORD_TOKEN')
+if not TOKEN:
+    print("Hata: DISCORD_TOKEN bulunamadı!")
+    sys.exit(1)
 
 # Admin user IDs (Discord user IDs)
 ADMIN_USER_IDS = [1154754197057703946]  # Discord user IDs here
