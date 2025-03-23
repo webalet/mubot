@@ -8,7 +8,6 @@ from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 import random
 from datetime import datetime
 import asyncio
-from dotenv import load_dotenv
 from discord import app_commands
 from flask import Flask
 import threading
@@ -19,9 +18,6 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     return 'Bot is running!'
-
-# Load .env file
-load_dotenv()
 
 # Logging settings
 logging.basicConfig(
